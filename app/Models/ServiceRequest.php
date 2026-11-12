@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\RequestCategory;
 use App\Enums\RequestPriority;
 use App\Enums\RequestStatus;
+use App\Enums\UserRole;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -60,5 +62,23 @@ class ServiceRequest extends Model
     public function activities(): HasMany
     {
         return $this->hasMany(RequestActivity::class);
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        return match ($user->role) {
+            UserRole::Employee => $query->where('requester_id', $user->id),
+
+            UserRole::Manager => $query
+                ->whereIn('requester_id', $user->directReports()->select('id'))
+                ->where('status', '!=', RequestStatus::Draft->value),
+
+            UserRole::Operations => $query->whereIn('status', [
+                RequestStatus::Approved->value,
+                RequestStatus::Assigned->value,
+                RequestStatus::InProgress->value,
+                RequestStatus::Completed->value,
+            ]),
+        };
     }
 }

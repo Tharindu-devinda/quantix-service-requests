@@ -2,23 +2,25 @@
 
 namespace Database\Factories;
 
-use App\Models\RequestActivity;
+use App\Enums\RequestStatus;
+use App\Models\ServiceRequest;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<RequestActivity>
+ * @extends Factory<\App\Models\RequestActivity>
  */
 class RequestActivityFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            //
+            'service_request_id' => ServiceRequest::factory(),
+            'user_id' => User::factory(),
+            'action' => 'submitted',
+            'from_status' => RequestStatus::Draft,
+            'to_status' => RequestStatus::Submitted,
+            'comment' => null,
         ];
     }
 }
