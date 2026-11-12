@@ -60,4 +60,14 @@ class User extends Authenticatable
     {
         return $this->role === UserRole::Operations;
     }
+
+    public function requests(): HasMany
+    {
+        return $this->hasMany(ServiceRequest::class, 'requester_id');
+    }
+
+    public function assignedRequests(): HasMany
+    {
+        return $this->hasMany(ServiceRequest::class, 'assigned_to');
+    }
 }
