@@ -89,8 +89,8 @@ class ServiceRequestController extends Controller
         $serviceRequest->load([
             'requester',
             'assignee',
-            'comments' => fn($query) => $query->oldest()->with('user'),
-            'activities' => fn($query) => $query->oldest()->with('user'),
+            'comments' => fn($query) => $query->oldest()->oldest('id')->with('user'),
+            'activities' => fn($query) => $query->oldest()->oldest('id')->with('user'),
         ]);
 
         return new ServiceRequestResource($serviceRequest);
