@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\RequestStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ServiceRequest\IndexServiceRequestRequest;
 use App\Http\Requests\ServiceRequest\StoreServiceRequestRequest;
 use App\Http\Resources\ServiceRequestResource;
 use App\Models\ServiceRequest;
+use App\Services\RequestWorkflowService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class ServiceRequestController extends Controller
@@ -48,19 +47,9 @@ class ServiceRequestController extends Controller
      * @param  StoreServiceRequestRequest  $request
      * @return JsonResponse
      */
-    public function store(StoreServiceRequestRequest $request): JsonResponse
+    public function store(StoreServiceRequestRequest $request, RequestWorkflowService $workflow): JsonResponse
     {
-        $serviceRequest = DB::transaction(function () use ($request) {
-            $serviceRequest = $request->user()->requests()->create($request->validated());
-
-            $serviceRequest->activities()->create([
-                'user_id' => $request->user()->id,
-                'action' => 'created',
-                'to_status' => RequestStatus::Draft,
-            ]);
-
-            return $serviceRequest;
-        });
+        $serviceRequest = $workflow->create($request->user(), $request->validated());
 
         return (new ServiceRequestResource($serviceRequest->load('requester')))
             ->response()
