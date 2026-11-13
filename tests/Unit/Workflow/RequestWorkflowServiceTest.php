@@ -150,4 +150,22 @@ class RequestWorkflowServiceTest extends TestCase
 
         $this->workflow->start($request, $operations);
     }
+
+    public function test_update_is_rejected_when_the_request_is_not_editable(): void
+    {
+        $employee = User::factory()->employee()->create();
+        $request = ServiceRequest::factory()->submitted()->create([
+            'requester_id' => $employee->id,
+            'title' => 'Original',
+        ]);
+
+        try {
+            $this->workflow->update($request, $employee, ['title' => 'Changed']);
+            $this->fail('Expected InvalidTransitionException was not thrown.');
+        } catch (InvalidTransitionException $e) {
+            $this->assertStringContainsString("'submitted' status cannot be edited", $e->getMessage());
+        }
+
+        $this->assertSame('Original', $request->fresh()->title);
+    }
 }
