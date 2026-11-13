@@ -2,12 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\RequestComment;
 use App\Models\ServiceRequest;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\RequestComment>
+ * @extends Factory<RequestComment>
  */
 class RequestCommentFactory extends Factory
 {

@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\RequestComment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\RequestComment
+ * @mixin RequestComment
  */
 class RequestCommentResource extends JsonResource
 {

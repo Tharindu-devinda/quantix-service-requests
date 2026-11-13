@@ -17,8 +17,6 @@ class ServiceRequestController extends Controller
 {
     /**
      * Display a listing of the resource.
-     * @param  IndexServiceRequestRequest  $request
-     * @return AnonymousResourceCollection
      */
     public function index(IndexServiceRequestRequest $request): AnonymousResourceCollection
     {
@@ -29,7 +27,7 @@ class ServiceRequestController extends Controller
         $requests = ServiceRequest::query()
             ->visibleTo($request->user())
             ->with(['requester', 'assignee'])
-            ->when($filters['status'] ?? null, fn($query, $status) => $query->where('status', $status))
+            ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
             ->when($filters['search'] ?? null, function ($query, $search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('title', 'like', "%{$search}%")
@@ -45,8 +43,6 @@ class ServiceRequestController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     * @param  StoreServiceRequestRequest  $request
-     * @return JsonResponse
      */
     public function store(StoreServiceRequestRequest $request, RequestWorkflowService $workflow): JsonResponse
     {
@@ -63,9 +59,6 @@ class ServiceRequestController extends Controller
 
     /**
      * Update the specified resource in storage.
-     * @param  UpdateServiceRequestRequest  $request
-     * @param  ServiceRequest  $serviceRequest
-     * @return ServiceRequestResource
      */
     public function update(
         UpdateServiceRequestRequest $request,
@@ -79,8 +72,6 @@ class ServiceRequestController extends Controller
 
     /**
      * Display the specified resource.
-     * @param  ServiceRequest  $serviceRequest
-     * @return ServiceRequestResource
      */
     public function show(ServiceRequest $serviceRequest): ServiceRequestResource
     {
@@ -89,8 +80,8 @@ class ServiceRequestController extends Controller
         $serviceRequest->load([
             'requester',
             'assignee',
-            'comments' => fn($query) => $query->oldest()->oldest('id')->with('user'),
-            'activities' => fn($query) => $query->oldest()->oldest('id')->with('user'),
+            'comments' => fn ($query) => $query->oldest()->oldest('id')->with('user'),
+            'activities' => fn ($query) => $query->oldest()->oldest('id')->with('user'),
         ]);
 
         return new ServiceRequestResource($serviceRequest);

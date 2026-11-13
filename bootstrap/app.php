@@ -37,7 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json(['message' => 'This action is unauthorized.'], 403);
             }
         });
-        
+
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json(['message' => 'Resource not found.'], 404);

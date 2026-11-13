@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Enums\RequestStatus;
-use App\Enums\UserRole;
 use App\Models\RequestActivity;
 use App\Models\ServiceRequest;
 use App\Models\User;

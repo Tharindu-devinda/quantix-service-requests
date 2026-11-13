@@ -5,11 +5,12 @@ namespace Database\Factories;
 use App\Enums\RequestCategory;
 use App\Enums\RequestPriority;
 use App\Enums\RequestStatus;
+use App\Models\ServiceRequest;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\ServiceRequest>
+ * @extends Factory<ServiceRequest>
  */
 class ServiceRequestFactory extends Factory
 {

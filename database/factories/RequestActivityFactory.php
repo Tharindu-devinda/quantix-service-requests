@@ -3,12 +3,13 @@
 namespace Database\Factories;
 
 use App\Enums\RequestStatus;
+use App\Models\RequestActivity;
 use App\Models\ServiceRequest;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\RequestActivity>
+ * @extends Factory<RequestActivity>
  */
 class RequestActivityFactory extends Factory
 {
