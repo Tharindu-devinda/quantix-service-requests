@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\RequestCommentController;
 use App\Http\Controllers\Api\ServiceRequestController;
 use App\Http\Controllers\Api\ServiceRequestWorkflowController;
@@ -26,4 +27,6 @@ Route::middleware('auth:sanctum')->group(function () {
         });
 
     Route::post('requests/{serviceRequest}/comments', [RequestCommentController::class, 'store']);
+
+    Route::get('notifications', [NotificationController::class, 'index']);
 });

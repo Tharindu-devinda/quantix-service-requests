@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 
 class RequestWorkflowService
 {
+    public function __construct(private readonly RequestNotifier $notifier) {}
+
     /**
      * Create a new request as a draft, optionally submitting it straight away.
      *
@@ -134,6 +136,8 @@ class RequestWorkflowService
             $locked->forceFill($changes)->save();
 
             $this->log($locked, $actor, $this->actionFor($to), $from, $to, $comment);
+
+            $this->notifier->statusChanged($locked, $from, $actor, $comment);
 
             return $locked;
         });
