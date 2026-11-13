@@ -11,18 +11,46 @@ use Illuminate\Support\Facades\DB;
 class RequestWorkflowService
 {
     /**
-     * Create a new request as a draft and log its creation.
+     * Create a new request as a draft, optionally submitting it straight away.
      *
      * @param  array<string, mixed>  $data
      */
-    public function create(User $requester, array $data): ServiceRequest
+    public function create(User $requester, array $data, bool $submit = false): ServiceRequest
     {
-        return DB::transaction(function () use ($requester, $data) {
+        return DB::transaction(function () use ($requester, $data, $submit) {
             $serviceRequest = $requester->requests()->create($data);
 
             $this->log($serviceRequest, $requester, 'created', null, RequestStatus::Draft);
 
-            return $serviceRequest;
+            return $submit
+                ? $this->submit($serviceRequest, $requester)
+                : $serviceRequest;
+        });
+    }
+
+    /**
+     * Edit a draft or returned request and record the change.
+     *
+     * @param  array<string, mixed>  $data
+     *
+     * @throws InvalidTransitionException
+     */
+    public function update(ServiceRequest $serviceRequest, User $actor, array $data): ServiceRequest
+    {
+        return DB::transaction(function () use ($serviceRequest, $actor, $data) {
+            $locked = ServiceRequest::query()
+                ->lockForUpdate()
+                ->findOrFail($serviceRequest->getKey());
+
+            if (! $locked->status->isEditable()) {
+                throw InvalidTransitionException::notEditable($locked->status);
+            }
+
+            $locked->update($data);
+
+            $this->log($locked, $actor, 'updated', $locked->status, $locked->status);
+
+            return $locked;
         });
     }
 
@@ -82,7 +110,7 @@ class RequestWorkflowService
         array $attributes = [],
     ): ServiceRequest {
         return DB::transaction(function () use ($serviceRequest, $to, $actor, $comment, $attributes) {
-            
+
             $locked = ServiceRequest::query()
                 ->lockForUpdate()
                 ->findOrFail($serviceRequest->getKey());

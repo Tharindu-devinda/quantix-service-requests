@@ -24,4 +24,9 @@ class InvalidTransitionException extends DomainException
     {
         return response()->json(['message' => $this->getMessage()], 422);
     }
+
+    public static function notEditable(RequestStatus $status): self
+    {
+        return new self("A request in '{$status->value}' status cannot be edited.");
+    }
 }

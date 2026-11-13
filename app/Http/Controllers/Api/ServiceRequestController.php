@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ServiceRequest\IndexServiceRequestRequest;
 use App\Http\Requests\ServiceRequest\StoreServiceRequestRequest;
+use App\Http\Requests\ServiceRequest\UpdateServiceRequestRequest;
 use App\Http\Resources\ServiceRequestResource;
 use App\Models\ServiceRequest;
 use App\Services\RequestWorkflowService;
@@ -28,7 +29,7 @@ class ServiceRequestController extends Controller
         $requests = ServiceRequest::query()
             ->visibleTo($request->user())
             ->with(['requester', 'assignee'])
-            ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
+            ->when($filters['status'] ?? null, fn($query, $status) => $query->where('status', $status))
             ->when($filters['search'] ?? null, function ($query, $search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('title', 'like', "%{$search}%")
@@ -49,11 +50,31 @@ class ServiceRequestController extends Controller
      */
     public function store(StoreServiceRequestRequest $request, RequestWorkflowService $workflow): JsonResponse
     {
-        $serviceRequest = $workflow->create($request->user(), $request->validated());
+        $serviceRequest = $workflow->create(
+            $request->user(),
+            $request->safe()->except('submit'),
+            $request->boolean('submit'),
+        );
 
         return (new ServiceRequestResource($serviceRequest->load('requester')))
             ->response()
             ->setStatusCode(201);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     * @param  UpdateServiceRequestRequest  $request
+     * @param  ServiceRequest  $serviceRequest
+     * @return ServiceRequestResource
+     */
+    public function update(
+        UpdateServiceRequestRequest $request,
+        ServiceRequest $serviceRequest,
+        RequestWorkflowService $workflow,
+    ): ServiceRequestResource {
+        $updated = $workflow->update($serviceRequest, $request->user(), $request->validated());
+
+        return new ServiceRequestResource($updated->load(['requester', 'assignee']));
     }
 
     /**
@@ -68,8 +89,8 @@ class ServiceRequestController extends Controller
         $serviceRequest->load([
             'requester',
             'assignee',
-            'comments' => fn ($query) => $query->oldest()->with('user'),
-            'activities' => fn ($query) => $query->oldest()->with('user'),
+            'comments' => fn($query) => $query->oldest()->with('user'),
+            'activities' => fn($query) => $query->oldest()->with('user'),
         ]);
 
         return new ServiceRequestResource($serviceRequest);

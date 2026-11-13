@@ -25,6 +25,7 @@ class StoreServiceRequestRequest extends FormRequest
             'description' => ['required', 'string', 'max:5000'],
             'category' => ['required', Rule::enum(RequestCategory::class)],
             'priority' => ['sometimes', Rule::enum(RequestPriority::class)],
+            'submit' => ['sometimes', 'boolean'],
         ];
     }
 }

@@ -8,8 +8,14 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
+    
     Route::post('/logout', [AuthController::class, 'logout']);
+
     Route::apiResource('requests', ServiceRequestController::class)
         ->only(['index', 'store', 'show'])
+        ->parameters(['requests' => 'serviceRequest']);
+
+    Route::apiResource('requests', ServiceRequestController::class)
+        ->only(['index', 'store', 'show', 'update'])
         ->parameters(['requests' => 'serviceRequest']);
 });

@@ -86,4 +86,16 @@ class CreateServiceRequestTest extends TestCase
     {
         $this->postJson('/api/requests', $this->payload())->assertUnauthorized();
     }
+
+    public function test_employee_can_create_and_submit_in_one_call(): void
+    {
+        $employee = User::factory()->employee()->create();
+        Sanctum::actingAs($employee);
+
+        $this->postJson('/api/requests', $this->payload(['submit' => true]))
+            ->assertCreated()
+            ->assertJsonPath('data.status', 'submitted');
+
+        $this->assertDatabaseCount('request_activities', 2); // created + submitted
+    }
 }
