@@ -25,4 +25,64 @@ class ServiceRequestPolicy
     {
         return $user->isEmployee();
     }
+
+    /**
+     * Employees edit only their own request, and only in Draft or Returned.
+     */
+    public function update(User $user, ServiceRequest $serviceRequest): bool
+    {
+        return $this->isOwner($user, $serviceRequest)
+            && $serviceRequest->status->isEditable();
+    }
+
+    /**
+     * Who may send it for review. Whether the status allows it is the service's job (422).
+     */
+    public function submit(User $user, ServiceRequest $serviceRequest): bool
+    {
+        return $this->isOwner($user, $serviceRequest);
+    }
+
+    /**
+     * Approve, reject or return: managers, for their own direct reports only.
+     */
+    public function decide(User $user, ServiceRequest $serviceRequest): bool
+    {
+        return $user->isManager()
+            && $this->isManagerOf($user, $serviceRequest);
+    }
+
+    public function assign(User $user, ServiceRequest $serviceRequest): bool
+    {
+        return $user->isOperations()
+            && $this->view($user, $serviceRequest);
+    }
+
+    /**
+     * Start or complete work.
+     */
+    public function changeStatus(User $user, ServiceRequest $serviceRequest): bool
+    {
+        return $user->isOperations()
+            && $this->view($user, $serviceRequest);
+    }
+
+    public function comment(User $user, ServiceRequest $serviceRequest): bool
+    {
+        return $this->view($user, $serviceRequest);
+    }
+
+    private function isOwner(User $user, ServiceRequest $serviceRequest): bool
+    {
+        return $user->isEmployee()
+            && (int) $serviceRequest->requester_id === $user->id;
+    }
+
+    private function isManagerOf(User $manager, ServiceRequest $serviceRequest): bool
+    {
+        return User::query()
+            ->whereKey($serviceRequest->requester_id)
+            ->where('manager_id', $manager->id)
+            ->exists();
+    }
 }
